@@ -7,7 +7,7 @@ name = "activity_tracker"
 version = "0.0.1"
 description = "A repository for activity tracker"
 authors = [
-  { name = "Your name (or your organization/company/team)" },
+  { name = "jaerongahn@gmail.com" },
 ]
 license = { file = "LICENSE" }
 readme = "README.md"
