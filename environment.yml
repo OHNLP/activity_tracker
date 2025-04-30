@@ -12,6 +12,7 @@ dependencies:
   - numpy
   - ipykernel
   - pip:
+      - openpyxl
       - python-dotenv
       - pyodbc
       - -e .
