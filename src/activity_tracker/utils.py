@@ -1,12 +1,12 @@
 import os
+import pathlib
 
 import pyodbc
 from dotenv import load_dotenv
-from pyspark.sql import SparkSession
+from pyspark.sql import DataFrame, SparkSession
 
 # Load environment variables once
 load_dotenv()
-
 SERVER = os.getenv("SERVER")
 DATABASE = os.getenv("DATABASE")
 USERNAME = os.getenv("USERNAME")
@@ -16,15 +16,20 @@ JDBC_DRIVER = os.getenv("JDBC_DRIVER")
 JDBC_URL = f"jdbc:jtds:sqlserver://{SERVER}:1433/{DATABASE};domain={DOMAIN}"
 
 
-def query_with_spark(query: str):
-    """Run a SQL query against SQL Server using PySpark via JTDS JDBC driver."""
-    query = f"({query}) AS sub"
-
-    spark = (
-        SparkSession.builder.appName("SQLServer-JTDS-Query")
+def get_spark_session(app_name: str = "SQLServer-JTDS-Query") -> SparkSession:
+    """Initialize and return a Spark session configured for JDBC with JTDS."""
+    return (
+        SparkSession.builder.appName(app_name)
         .config("spark.driver.extraClassPath", JDBC_DRIVER)
         .getOrCreate()
     )
+
+
+def query_with_spark(query: str, spark: SparkSession = None) -> DataFrame:
+    """Run a SQL query against SQL Server using PySpark via JTDS JDBC driver."""
+    if not spark:
+        spark = get_spark_session()
+    query = f"({query}) AS sub"
 
     return (
         spark.read.format("jdbc")
@@ -34,6 +39,19 @@ def query_with_spark(query: str):
         .option("password", PASSWORD)
         .option("driver", "net.sourceforge.jtds.jdbc.Driver")
         .load()
+    )
+
+
+def read_csv_with_spark(
+    file_path: str | pathlib.Path, spark: SparkSession = None
+) -> DataFrame:
+    """Read a CSV file using Spark with header and inferred schema."""
+    if not spark:
+        spark = get_spark_session()
+    return (
+        spark.read.option("header", "true")
+        .option("inferSchema", "true")
+        .csv(str(file_path))
     )
 
 
