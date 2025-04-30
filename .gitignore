@@ -167,6 +167,7 @@ data/
 *.csv
 *.xlsx
 *.numbers
+*.db
 
 # model files
 *.jar
