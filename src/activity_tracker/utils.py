@@ -1,6 +1,9 @@
 import os
 import pathlib
+import re
+from collections import defaultdict
 
+import pandas as pd
 import pyodbc
 from dotenv import load_dotenv
 from pyspark.sql import DataFrame, SparkSession
@@ -66,3 +69,26 @@ def create_connection() -> pyodbc.Connection:
         f"PORT=1433;"
         f"ntlmv2*=yes;"
     )
+
+
+def load_data_dictionary(excel_path: str | pathlib.Path) -> dict:
+
+    # Load the Excel file (MDE clinical data.xlsx)
+    xls = pd.ExcelFile(excel_path)
+    df_dict = pd.read_excel(xls, sheet_name=xls.sheet_names[2])
+    df_dict.columns = ["variable", "code_label"]
+    df_dict["variable"] = df_dict["variable"].ffill()
+    df_dict = df_dict.dropna(subset=["code_label"])
+
+    # Store key-value pairs in a dictionary
+    data_dictionary = defaultdict(dict)
+    for _, row in df_dict.iterrows():
+        variable = str(row["variable"]).strip().lower().replace(" ", "_")
+        match = re.match(r"^(\d+)\s*=\s*(.+)$", str(row["code_label"]).strip())
+        if match:
+            code, label = match.groups()
+            data_dictionary[variable][int(code)] = (
+                label.strip().lower().replace(" ", "_")
+            )
+
+    return dict(data_dictionary)
