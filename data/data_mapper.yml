@@ -1,45 +1,45 @@
 yes_no: &yes_no
-  "0": no
-  "1": yes
+  0: no
+  1: yes
 
 dependent_independent: &dep_ind
-  "0": dependent
-  "1": independent
+  0: dependent
+  1: independent
 
 sex:
-  "0": f
-  "1": m
+  0: f
+  1: m
 
 ethnicity:
-  "0": non_hisp
-  "1": hisp
+  0: non_hisp
+  1: hisp
 
 race:
-  "0": am_in_al_na
-  "1": asian
-  "2": black
-  "3": na_ha_pa_is
-  "4": white
-  "5": unknown
+  0: am_in_al_na
+  1: asian
+  2: black
+  3: na_ha_pa_is
+  4: white
+  5: unknown
 
 marital_status:
-  "0": married
-  "1": divorced
-  "2": widowed
-  "3": separated
-  "4": never_married
-  "5": unknown
+  0: married
+  1: divorced
+  2: widowed
+  3: separated
+  4: never_married
+  5: unknown
 
 living_situation:
-  "0": alone
-  "1": with_spouse
-  "2": with_family
-  "3": with_others
+  0: alone
+  1: with_spouse
+  2: with_family
+  3: with_others
 
 ffp_status:
-  "0": frail
-  "1": prefrail
-  "2": robust
+  0: frail
+  1: prefrail
+  2: robust
 
 wt_loss: *yes_no
 weak: *yes_no
