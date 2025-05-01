@@ -5,6 +5,7 @@ from collections import defaultdict
 
 import pandas as pd
 import pyodbc
+import yaml
 from dotenv import load_dotenv
 from pyspark.sql import DataFrame, SparkSession
 
@@ -92,3 +93,8 @@ def load_data_dictionary(excel_path: str | pathlib.Path) -> dict:
             )
 
     return dict(data_dictionary)
+
+
+def load_data_mapper(yaml_path):
+    with open(yaml_path, "r") as f:
+        return yaml.safe_load(f)
