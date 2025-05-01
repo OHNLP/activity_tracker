@@ -15,4 +15,5 @@ dependencies:
       - openpyxl
       - python-dotenv
       - pyodbc
+      - pyyaml
       - -e .
