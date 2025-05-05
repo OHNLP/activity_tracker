@@ -171,3 +171,6 @@ data/
 
 # model files
 *.jar
+
+# references
+references/
