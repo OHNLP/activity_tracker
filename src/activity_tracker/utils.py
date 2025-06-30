@@ -13,13 +13,13 @@ from dotenv import load_dotenv
 
 # Load environment variables once
 load_dotenv()
-SERVER = os.getenv("SERVER")
-DATABASE = os.getenv("DATABASE")
-USERNAME = os.getenv("USERNAME")
-PASSWORD = os.getenv("PASSWORD")
-DOMAIN = os.getenv("DOMAIN")
-JDBC_DRIVER = os.getenv("JDBC_DRIVER")
-JDBC_URL = f"jdbc:jtds:sqlserver://{SERVER}:1433/{DATABASE};domain={DOMAIN}"
+# SERVER = os.getenv("SERVER")
+# DATABASE = os.getenv("DATABASE")
+# USERNAME = os.getenv("USERNAME")
+# PASSWORD = os.getenv("PASSWORD")
+# DOMAIN = os.getenv("DOMAIN")
+# JDBC_DRIVER = os.getenv("JDBC_DRIVER")
+# JDBC_URL = f"jdbc:jtds:sqlserver://{SERVER}:1433/{DATABASE};domain={DOMAIN}"
 
 
 # def get_spark_session(app_name: str = "SQLServer-JTDS-Query") -> SparkSession:
@@ -100,3 +100,15 @@ def load_data_dictionary(excel_path: str | pathlib.Path) -> dict:
 def load_data_mapper(yaml_path):
     with open(yaml_path, "r") as f:
         return yaml.safe_load(f)
+
+
+def normalize_subject_id(subject_id: str) -> str:
+    """Normalize subject ID by padding the number with zeros.
+
+    Args:
+        subject_id: Subject ID string (e.g. "MDE1" or "MDE01")
+
+    Returns:
+        Normalized subject ID with padded zeros (e.g. "MDE001")
+    """
+    return re.sub(r"MDE(\d+)", lambda m: f"MDE{int(m.group(1)):03d}", subject_id)
