@@ -178,3 +178,6 @@ data/
 
 # references
 references/
+
+# datajoint
+dj_local_c*.json
