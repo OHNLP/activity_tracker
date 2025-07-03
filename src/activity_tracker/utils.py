@@ -112,3 +112,71 @@ def normalize_subject_id(subject_id: str) -> str:
         Normalized subject ID with padded zeros (e.g. "MDE001")
     """
     return re.sub(r"MDE(\d+)", lambda m: f"MDE{int(m.group(1)):03d}", subject_id)
+
+
+def make_unique_columns(cols):
+    """Make column names unique by appending numbers to duplicates."""
+    seen = {}
+    result = []
+    for col in cols:
+        base = col
+        if base not in seen:
+            seen[base] = 1
+            result.append(base)
+        else:
+            count = seen[base]
+            new_col = f"{base}_{count}"
+            while new_col in seen:
+                count += 1
+                new_col = f"{base}_{count}"
+            seen[base] = count + 1
+            seen[new_col] = 1
+            result.append(new_col)
+    return result
+
+
+def sanitize_column(col):
+    """Clean column names by removing parentheses, normalizing spacing, and removing special characters."""
+    base = col.split(".")[0]
+    # Remove anything in parentheses (and the parentheses themselves)
+    base = re.sub(r"\(.*?\)", "", base)
+    # Normalize spacing and other characters
+    name = "_".join(base.strip().split()).lower()
+    # Remove remaining special characters (slashes, dashes, percent signs)
+    name = name.replace("/", "").replace("-", "").replace("%", "")
+    return name
+
+
+def stack_visits(df, group_label):
+    """Process Excel data by stacking visits into long format."""
+    df = df.rename(columns={"Participant ID": "subject_id"})
+    visit_markers = sorted(
+        [
+            col
+            for col in df.columns
+            if col.startswith("V") and len(col) == 2 and col[1].isdigit()
+        ],
+        key=lambda x: int(x[1:]),
+    )
+
+    all_visits = []
+
+    for i, marker in enumerate(visit_markers):
+        start = df.columns.get_loc(marker) + 1
+        end = (
+            df.columns.get_loc(visit_markers[i + 1])
+            if i + 1 < len(visit_markers)
+            else len(df.columns)
+        )
+        visit_cols = df.columns[start:end].tolist()
+
+        visit_df = df[["subject_id"] + visit_cols].copy()
+        cleaned_cols = [sanitize_column(col) for col in visit_cols]
+        visit_df.columns = ["subject_id"] + make_unique_columns(cleaned_cols)
+
+        visit_df.insert(1, "group", group_label)
+        visit_df.insert(2, "visit_id", int(marker[1:]))
+
+        all_visits.append(visit_df)
+
+    return pd.concat(all_visits, ignore_index=True)
