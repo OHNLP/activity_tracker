@@ -97,5 +97,5 @@ class Subject(dj.Manual):
         df_subject = df_subject.where(pd.notnull(df_subject), None)
 
         # Insert into database
-        cls.insert(df_subject.to_dict("records"), skip_duplicates=True)
+        cls.insert(df_subject)
         print(f"Inserted {len(df_subject)} subject records")
