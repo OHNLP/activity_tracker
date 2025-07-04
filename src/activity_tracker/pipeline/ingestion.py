@@ -32,8 +32,10 @@ def ingest_visit_and_frailty():
     # Process frailty scores
     ffp_cols = ["wt_loss", "weak", "slow", "exhaust", "phys_act"]
     for df in [df_visits_control, df_visits_exercise]:
-        # Calculate FFP score using nansum (ignore NaN values)
-        df["ffp_score"] = df[ffp_cols].sum(axis=1, skipna=True)
+        # Calculate FFP score - only if ALL components are not null
+        df["ffp_score"] = df[ffp_cols].apply(
+            lambda row: row.sum() if row.notna().all() else pd.NA, axis=1
+        )
         df["gait"] = 4 / df["walk"].replace(0, pd.NA)
 
     # Combine dataframes
@@ -49,7 +51,8 @@ def ingest_visit_and_frailty():
         .apply(lambda x: int(x) if pd.notnull(x) else pd.NA)
         .astype("category")
     )
-    df["ffp_score"] = df["ffp_score"].astype(float)
+    # Keep FFP score as is - don't convert pd.NA to float NaN yet
+    # df["ffp_score"] = df["ffp_score"].astype(float)
 
     # Normalize subject IDs
     df["subject_id"] = df["subject_id"].apply(utils.normalize_subject_id)
@@ -116,14 +119,16 @@ def ingest_visit_and_frailty():
     df = df.merge(visit_dates_df, on=["subject_id", "visit_id"], how="left")
 
     # --- Prepare combined data for insertion ---
-
-    # Convert dates and data types (dates are already datetime objects from above)
     df["date"] = df["date"].dt.date
     df["visit_id"] = df["visit_id"].astype(int)
-    df["ffp_score"] = df["ffp_score"].astype(float)
 
-    # Handle missing values - replace NaN with None for database insertion
+    # Handle missing values first - replace NaN with None for database insertion
     df_combined = df.where(pd.notnull(df), None)
+
+    # Convert FFP score carefully after handling NaN - preserve None for missing values
+    df_combined["ffp_score"] = df_combined["ffp_score"].apply(
+        lambda x: float(x) if x is not None and pd.notna(x) else None
+    )
     df_combined = df_combined[df_combined["date"].notna()]  # drop rows with no date
 
     # --- Insert into database using the same dataframe ---
