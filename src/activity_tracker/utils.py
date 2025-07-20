@@ -180,3 +180,11 @@ def stack_visits(df, group_label):
         all_visits.append(visit_df)
 
     return pd.concat(all_visits, ignore_index=True)
+
+
+def camel_to_snake(name: str) -> str:
+    """Convert camel case to snake case.
+    For changing raw file names to table names.
+    """
+    name = name.replace("_merged", "")
+    return re.sub(r"(?<=[a-z0-9])([A-Z])", r"_\1", name).lower()
