@@ -4,7 +4,7 @@ import datajoint as dj
 import pandas as pd
 
 from activity_tracker import utils
-from activity_tracker.pipeline.measurement import Frailty
+from activity_tracker.pipeline.measurement import DailyMeasurement, Frailty
 from activity_tracker.pipeline.visit import Visit
 
 
@@ -142,5 +142,48 @@ def ingest_visit_and_frailty():
     print(f"Inserted visit and frailty records from {len(df_combined)} rows")
 
 
+def ingest_daily_measurements():
+    """
+    Ingest daily measurement data from CSV files into measurement.DailyMeasurement table.
+    """
+
+    # Load data
+    data_dir = pathlib.Path(dj.config["custom"]["root_data_dir"])
+    data_path = data_dir / "raw/daily/dailyActivity_merged.csv"
+    df_measurement = pd.read_csv(data_path)
+
+    # Column name sanitization
+    df_measurement.columns = [
+        utils.camel_to_snake(col) for col in df_measurement.columns
+    ]
+    df_measurement = df_measurement.rename({"id": "subject_id", "day": "date"}, axis=1)
+    df_measurement["subject_id"] = df_measurement["subject_id"].apply(
+        utils.normalize_subject_id
+    )
+    df_measurement["activity_date"] = pd.to_datetime(df_measurement["activity_date"])
+    df_measurement.rename(columns={"activity_date": "date"}, inplace=True)
+    df_measurement.sort_values(by=["subject_id", "date"], inplace=True)
+
+    # Select only the columns that match the DailyMeasurement table schema
+    df_measurement = df_measurement[
+        [
+            "subject_id",
+            "date",
+            "total_steps",
+            "total_distance",
+            "sedentary_minutes",
+            "calories_bmr",
+        ]
+    ]
+    df_measurement = df_measurement.where(pd.notnull(df_measurement), None)
+
+    # Insert into database
+    DailyMeasurement.insert(
+        df_measurement, skip_duplicates=True, allow_direct_insert=True
+    )
+    print(f"Inserted daily measurement records from {len(df_measurement)} rows")
+
+
 if __name__ == "__main__":
     ingest_visit_and_frailty()
+    ingest_daily_measurements()
