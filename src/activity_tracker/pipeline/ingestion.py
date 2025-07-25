@@ -5,6 +5,8 @@ import pandas as pd
 
 from activity_tracker import utils
 from activity_tracker.pipeline.measurement import DailyMeasurement, Frailty
+from activity_tracker.pipeline.models import Feature
+from activity_tracker.pipeline.subject import Subject
 from activity_tracker.pipeline.visit import Visit
 
 
@@ -175,6 +177,14 @@ def ingest_daily_measurements():
             "calories_bmr",
         ]
     ]
+    # Convert multiple columns to numeric in one line
+    df_measurement[
+        ["total_steps", "total_distance", "sedentary_minutes", "calories_bmr"]
+    ] = df_measurement[
+        ["total_steps", "total_distance", "sedentary_minutes", "calories_bmr"]
+    ].astype(
+        float
+    )
     df_measurement = df_measurement.where(pd.notnull(df_measurement), None)
 
     # Insert into database
@@ -184,6 +194,138 @@ def ingest_daily_measurements():
     print(f"Inserted daily measurement records from {len(df_measurement)} rows")
 
 
+def ingest_features():
+
+    # Load data from datajoint tables
+    df_subject = Subject.fetch(format="frame").reset_index()
+    df_visit = (Frailty & Visit).fetch(format="frame").reset_index()
+    df_measurement = DailyMeasurement.fetch(format="frame").reset_index()
+
+    df_measurement = df_measurement.sort_values(["subject_id", "date"])
+
+    df_measurement[
+        ["total_steps", "total_distance", "sedentary_minutes", "calories_bmr"]
+    ] = df_measurement[
+        ["total_steps", "total_distance", "sedentary_minutes", "calories_bmr"]
+    ].apply(
+        pd.to_numeric, errors="coerce"
+    )
+
+    # Compute features for each visit interval
+    visit_ids = sorted(df_visit["visit_id"].unique())
+    ml_features = []
+
+    for i in range(len(visit_ids) - 1):
+        v_start = visit_ids[i]
+        v_end = visit_ids[i + 1]
+
+        # Get visit data for current and next visit
+        visit_n = df_visit[df_visit["visit_id"] == v_start][
+            ["subject_id", "date", "ffp_status"]
+        ].rename(columns={"date": "start_date", "ffp_status": "prev_ffp_status"})
+        visit_np1 = df_visit[df_visit["visit_id"] == v_end][
+            ["subject_id", "date", "ffp_status"]
+        ].rename(
+            columns={"date": "measurement_date", "ffp_status": "target_ffp_status"}
+        )
+        visit_window = visit_n.merge(visit_np1, on="subject_id", how="inner")
+
+        filtered_all = []
+        for _, row in visit_window.iterrows():
+            # Get measurements between visits
+            subset = df_measurement[
+                (df_measurement["subject_id"] == row["subject_id"])
+                & (df_measurement["date"] >= row["start_date"])
+                & (df_measurement["date"] <= row["measurement_date"])
+            ].copy()
+
+            if not subset.empty:
+                subset["measurement_date"] = row["measurement_date"]
+                subset["start_date"] = row["start_date"]
+                subset["prev_ffp_status"] = row["prev_ffp_status"]
+                subset["target_ffp_status"] = row["target_ffp_status"]
+                filtered_all.append(subset)
+
+        if not filtered_all:
+            continue
+
+        filtered = pd.concat(filtered_all, ignore_index=True)
+
+        # Helper function for longest active streak
+        def longest_active_streak(steps):
+            streak = max_streak = 0
+            for s in steps:
+                if s > 0:
+                    streak += 1
+                    max_streak = max(max_streak, streak)
+                else:
+                    streak = 0
+            return max_streak
+
+        # Group by subject and compute features
+        grouped = filtered.groupby(
+            [
+                "subject_id",
+                "start_date",
+                "measurement_date",
+                "target_ffp_status",
+                "prev_ffp_status",
+            ]
+        )["total_steps"]
+
+        features = grouped.agg(
+            total_steps_sum="sum",
+            total_steps_mean="mean",
+            total_steps_std="std",
+            days_exercised=lambda x: (x > 0).sum(),
+            interval_length="count",
+            longest_active_streak=longest_active_streak,
+        ).reset_index()
+
+        # Calculate proportion of days exercised
+        features["prop_days_exercised"] = features.apply(
+            lambda row: (
+                row["days_exercised"] / row["interval_length"]
+                if row["interval_length"] > 0
+                else 0
+            ),
+            axis=1,
+        )
+        features["visit_interval"] = f"{v_start}_to_{v_end}"
+
+        ml_features.append(features)
+
+    # Combine all features
+    ml_feature_matrix = pd.concat(ml_features, ignore_index=True)
+    ml_feature_matrix = ml_feature_matrix.sort_values(
+        ["subject_id", "measurement_date"]
+    )
+
+    # Add cumulative steps
+    ml_feature_matrix["cumulative_steps"] = ml_feature_matrix.groupby("subject_id")[
+        "total_steps_sum"
+    ].cumsum()
+
+    # Merge subject-level features (excluding group column)
+    ml_feature_matrix = ml_feature_matrix.merge(
+        df_subject.drop(columns=["group"]), on="subject_id", how="left"
+    )
+
+    # Insert
+    Feature.insert1(
+        {
+            "feature_id": 1,
+            "feature_matrix": {
+                "columns": ml_feature_matrix.columns.tolist(),
+                "data": ml_feature_matrix.to_numpy(),
+            },
+            "feature_description": "",
+        },
+        allow_direct_insert=True,
+    )
+
+
 if __name__ == "__main__":
-    ingest_visit_and_frailty()
-    ingest_daily_measurements()
+    # ingest_visit_and_frailty()
+    # ingest_daily_measurements()
+    ingest_features()
