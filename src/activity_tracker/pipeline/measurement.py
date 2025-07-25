@@ -44,10 +44,10 @@ class DailyMeasurement(dj.Imported):
     -> Subject
     date: date
     ---
-    total_steps=null: int
+    total_steps=null: float
     total_distance=null: float
-    sedentary_minutes=null: int
-    calories_bmr=null: int
+    sedentary_minutes=null: float
+    calories_bmr=null: float
     """
 
     def make(self, key):
