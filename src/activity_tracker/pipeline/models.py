@@ -25,6 +25,11 @@ class Feature(dj.Imported):
     feature_description="": varchar(255)
     """
 
+    @classmethod
+    def get_feature_matrix(cls, feature_id) -> pd.DataFrame:
+        feature_matrix = (cls & f"feature_id = {feature_id}").fetch1("feature_matrix")
+        return pd.DataFrame(feature_matrix["data"], columns=feature_matrix["columns"])
+
 
 @schema
 class Parameter(dj.Lookup):
