@@ -26,7 +26,7 @@ class Subject(dj.Manual):
     sex=null: enum('m', 'f', '')                 # Sex assigned at birth
     age=null: float                # Age in years at enrollment
     ethnicity=null: enum('hisp', 'non_hisp', '') # Hispanic ethnicity
-    race=null: enum('white', 'black', 'am_in_al_na', '')  # Race category
+    race=null: enum('am_in_al_na', 'asian', 'black', 'na_ha_pa_is', 'white', '')  # Race category
     monthly_income=null: float           # Monthly income in dollars
     education=null: float                # Years of education
     marital_status=null: enum('married', 'divorced', 'widowed', 'separated', 'never_married', '')  # Marital status
