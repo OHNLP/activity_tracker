@@ -40,7 +40,7 @@ class Subject(dj.Manual):
         """
         data_dir = pathlib.Path(dj.config["custom"]["root_data_dir"])
         excel_path = data_dir / "raw/MDE clinical data.xlsx"
-        mapper_path = data_dir / "raw/data_mapper.yml"
+        mapper_path = data_dir / "data_mapper.yml"
 
         xls = pd.ExcelFile(excel_path)
         df_control = pd.read_excel(xls, sheet_name=xls.sheet_names[0])

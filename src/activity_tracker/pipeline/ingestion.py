@@ -17,7 +17,7 @@ def ingest_visit_and_frailty():
 
     data_dir = pathlib.Path(dj.config["custom"]["root_data_dir"])
     excel_path = data_dir / "raw/MDE clinical data.xlsx"
-    mapper_path = data_dir / "raw/data_mapper.yml"
+    mapper_path = data_dir / "data_mapper.yml"
     study_log_path = data_dir / "raw/mde_study_log.csv"  # Add study log path
 
     # Load data mapper
@@ -221,12 +221,15 @@ def ingest_features():
 
         # Get visit data for current and next visit
         visit_n = df_visit[df_visit["visit_id"] == v_start][
-            ["subject_id", "date", "ffp_status"]
-        ].rename(columns={"date": "start_date", "ffp_status": "prev_ffp_status"})
+            ["subject_id", "date", "ffp_status_binary"]
+        ].rename(columns={"date": "start_date", "ffp_status_binary": "prev_ffp_status"})
         visit_np1 = df_visit[df_visit["visit_id"] == v_end][
-            ["subject_id", "date", "ffp_status"]
+            ["subject_id", "date", "ffp_status_binary"]
         ].rename(
-            columns={"date": "measurement_date", "ffp_status": "target_ffp_status"}
+            columns={
+                "date": "measurement_date",
+                "ffp_status_binary": "target_ffp_status",
+            }
         )
         visit_window = visit_n.merge(visit_np1, on="subject_id", how="inner")
 
@@ -306,10 +309,8 @@ def ingest_features():
         "total_steps_sum"
     ].cumsum()
 
-    # Merge subject-level features (excluding group column)
-    ml_feature_matrix = ml_feature_matrix.merge(
-        df_subject.drop(columns=["group"]), on="subject_id", how="left"
-    )
+    # Merge subject-level features
+    ml_feature_matrix = ml_feature_matrix.merge(df_subject, on="subject_id", how="left")
 
     # Insert
     Feature.insert1(
