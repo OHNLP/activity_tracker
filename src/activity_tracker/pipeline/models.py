@@ -6,7 +6,6 @@ import pandas as pd
 from .. import utils
 from . import get_schema_name
 from .measurement import DailyMeasurement, Frailty
-from .subject import Subject
 
 schema = dj.schema(get_schema_name("models"))
 
@@ -26,7 +25,7 @@ class Feature(dj.Imported):
     """
 
     @classmethod
-    def get_feature_matrix(cls, feature_id) -> pd.DataFrame:
+    def get_feature_matrix(cls, feature_id: int) -> pd.DataFrame:
         feature_matrix = (cls & f"feature_id = {feature_id}").fetch1("feature_matrix")
         return pd.DataFrame(feature_matrix["data"], columns=feature_matrix["columns"])
 
