@@ -194,11 +194,15 @@ def ingest_daily_measurements():
     print(f"Inserted daily measurement records from {len(df_measurement)} rows")
 
 
-def ingest_features():
+def ingest_features(feature_id: int):
+
+    if feature_id in Feature.fetch("feature_id"):
+        print(f"Feature {feature_id} already exists")
+        return
 
     # Load data from datajoint tables
     df_subject = Subject.fetch(format="frame").reset_index()
-    df_visit = (Frailty & Visit).fetch(format="frame").reset_index()
+    df_visit = (Visit.join(Frailty)).fetch(format="frame").reset_index()
     df_measurement = DailyMeasurement.fetch(format="frame").reset_index()
 
     df_measurement = df_measurement.sort_values(["subject_id", "date"])
@@ -331,7 +335,7 @@ def ingest_features():
     # Insert
     Feature.insert1(
         {
-            "feature_id": 1,
+            "feature_id": feature_id,
             "feature_matrix": {
                 "columns": ml_feature_matrix.columns.tolist(),
                 "data": ml_feature_matrix.to_numpy(),
