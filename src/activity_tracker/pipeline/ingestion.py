@@ -296,6 +296,9 @@ def ingest_features():
         )
         features["visit_interval"] = f"{v_start}_to_{v_end}"
 
+        # Add intervention variable - initially set to 0 for all
+        features["intervention"] = 0
+
         ml_features.append(features)
 
     # Combine all features
@@ -311,6 +314,19 @@ def ingest_features():
 
     # Merge subject-level features
     ml_feature_matrix = ml_feature_matrix.merge(df_subject, on="subject_id", how="left")
+
+    ml_feature_matrix["intervention"] = ml_feature_matrix.apply(
+        lambda row: (
+            1
+            if (
+                # Exercise group during intervention period (visits 1-4)
+                row["group"] == "exercise"
+                and row["visit_interval"] in ["1_to_2", "2_to_3", "3_to_4"]
+            )
+            else 0
+        ),
+        axis=1,
+    )
 
     # Insert
     Feature.insert1(
