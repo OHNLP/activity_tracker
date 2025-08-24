@@ -23,14 +23,14 @@ class Subject(dj.Manual):
     subject_id: varchar(10)  # Subject identifier (e.g., MDE001)
     ---
     group=null: enum('control', 'exercise')  # Study group assignment
-    sex=null: enum('m', 'f', '')                 # Sex assigned at birth
+    sex=null: enum('m', 'f')                 # Sex assigned at birth
     age=null: float                # Age in years at enrollment
-    ethnicity=null: enum('hisp', 'non_hisp', '') # Hispanic ethnicity
-    race=null: enum('am_in_al_na', 'asian', 'black', 'na_ha_pa_is', 'white', '')  # Race category
+    ethnicity=null: enum('hisp', 'non_hisp') # Hispanic ethnicity
+    race=null: enum('am_in_al_na', 'asian', 'black', 'na_ha_pa_is', 'white')  # Race category
     monthly_income=null: float           # Monthly income in dollars
     education=null: float                # Years of education
-    marital_status=null: enum('married', 'divorced', 'widowed', 'separated', 'never_married', '')  # Marital status
-    living_situation=null: enum('alone', 'with_spouse', 'with_family', 'with_others', '')  # Living situation
+    marital_status=null: enum('married', 'divorced', 'widowed', 'separated', 'never_married')  # Marital status
+    living_situation=null: enum('alone', 'with_spouse', 'with_family', 'with_others')  # Living situation
     """
 
     @classmethod
@@ -90,8 +90,8 @@ class Subject(dj.Manual):
             utils.normalize_subject_id
         )  # pad subject_id with zeros
 
-        # Replace all 'unknown' with '' (empty string) for all columns
-        df_subject = df_subject.replace("unknown", "")
+        # Replace all 'unknown' with None for consistency
+        df_subject = df_subject.replace("unknown", None)
 
         # Replace NaN with None for SQL NULLs
         df_subject = df_subject.where(pd.notnull(df_subject), None)
