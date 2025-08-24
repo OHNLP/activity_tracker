@@ -176,6 +176,40 @@ def ingest_daily_measurements():
     ].astype(
         float
     )
+
+    # Zero-fill missing days for total_steps and total_distance
+    for subject_id in df_measurement["subject_id"].unique():
+        subject_data = df_measurement[df_measurement["subject_id"] == subject_id]
+        start_date = subject_data["date"].min()
+        end_date = subject_data["date"].max()
+
+        date_range = pd.date_range(start=start_date, end=end_date, freq="D")
+        existing_dates = set(subject_data["date"].dt.date)
+        missing_dates = set(date_range.date) - existing_dates
+
+        # Calculate mode (most frequent value) for this subject
+        subject_mode_calories = (
+            subject_data["calories_bmr"].mode().iloc[0]
+            if not subject_data["calories_bmr"].mode().empty
+            else None
+        )
+
+        for missing_date in missing_dates:
+            new_row = {
+                "subject_id": subject_id,
+                "date": pd.Timestamp(missing_date),
+                "total_steps": 0.0,
+                "total_distance": 0.0,
+                "sedentary_minutes": 1440.0,  # 24 hours * 60 minutes
+                "calories_bmr": subject_mode_calories,
+            }
+            df_measurement = pd.concat(
+                [df_measurement, pd.DataFrame([new_row])], ignore_index=True
+            )
+
+    # Sort by subject_id and date
+    df_measurement = df_measurement.sort_values(["subject_id", "date"])
+
     df_measurement = df_measurement.where(pd.notnull(df_measurement), None)
 
     # Insert into database
