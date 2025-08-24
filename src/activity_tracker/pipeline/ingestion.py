@@ -44,8 +44,6 @@ def ingest_visit_and_frailty():
     df = pd.concat([df_visits_control, df_visits_exercise], ignore_index=True)
     df = df.sort_values(by=["subject_id", "visit_id"]).reset_index(drop=True)
 
-    # Keep all columns - DataJoint will filter what it needs
-
     # Convert data types as in notebook
     df["visit_id"] = df["visit_id"].astype("category")
     df["ffp_status"] = (
@@ -103,28 +101,21 @@ def ingest_visit_and_frailty():
             .astype(str)
             .str.strip()
             .str.extract(
-                r"(\d{1,2}/\d{1,2}/\d{2})", expand=False
-            )  # Extract date pattern (2-digit year)
+                r"(\d{1,2}/\d{1,2}/\d{2,4})", expand=False
+            )  # Extract date pattern (2 or 4-digit year)
             .replace("OS", pd.NA)
         )
-        # All dates are in M/D/YY format with 2-digit years
-        visit_dates_df[col] = pd.to_datetime(
-            cleaned_dates, format="%m/%d/%y", errors="coerce"
-        )
+        # Handle both M/D/YY and M/D/YYYY formats
+        visit_dates_df[col] = pd.to_datetime(cleaned_dates, errors="coerce")
 
-    # Melt visit dates to long format
     visit_dates_df = visit_dates_df.melt(
         id_vars="subject_id", var_name="visit_id", value_name="date"
     )
-
-    # Merge visit dates with main dataframe
     df = df.merge(visit_dates_df, on=["subject_id", "visit_id"], how="left")
 
     # --- Prepare combined data for insertion ---
     df["date"] = df["date"].dt.date
     df["visit_id"] = df["visit_id"].astype(int)
-
-    # Handle missing values first - replace NaN with None for database insertion
     df_combined = df.where(pd.notnull(df), None)
 
     # Convert FFP score carefully after handling NaN - preserve None for missing values
