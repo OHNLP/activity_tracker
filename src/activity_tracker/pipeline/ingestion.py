@@ -1,4 +1,5 @@
 import pathlib
+from datetime import datetime
 
 import datajoint as dj
 import pandas as pd
@@ -219,7 +220,7 @@ def ingest_daily_measurements():
     print(f"Inserted daily measurement records from {len(df_measurement)} rows")
 
 
-def ingest_features(feature_id: int):
+def ingest_features(feature_id: int, feature_description: str = ""):
 
     if feature_id in Feature.fetch("feature_id"):
         print(f"Feature {feature_id} already exists")
@@ -365,7 +366,8 @@ def ingest_features(feature_id: int):
                 "columns": ml_feature_matrix.columns.tolist(),
                 "data": ml_feature_matrix.to_numpy(),
             },
-            "feature_description": "",
+            "ingestion_date": datetime.now(),
+            "feature_description": feature_description,
         },
         allow_direct_insert=True,
     )
@@ -374,4 +376,4 @@ def ingest_features(feature_id: int):
 if __name__ == "__main__":
     # ingest_visit_and_frailty()
     # ingest_daily_measurements()
-    ingest_features()
+    ingest_features(feature_id=1)
