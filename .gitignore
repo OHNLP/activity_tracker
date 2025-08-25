@@ -179,12 +179,7 @@ data/
 # references
 references/
 
-<<<<<<< HEAD
 # database
 *.db
 *.sqlite
 dj_*conf.json
-=======
-# datajoint
-dj_local_c*.json
->>>>>>> 5ef5c5380af7a66d56c2ed20a57fe15c270b873d
