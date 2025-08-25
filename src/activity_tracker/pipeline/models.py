@@ -21,6 +21,7 @@ class Feature(dj.Imported):
     feature_id: tinyint unsigned
     ---
     feature_matrix: longblob
+    ingestion_date: datetime
     feature_description="": varchar(255)
     """
 
