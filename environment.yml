@@ -13,6 +13,7 @@ dependencies:
   - numpy
   - ipykernel
   - pip:
+      - datajoint
       - openpyxl
       - plotly
       - python-dotenv
