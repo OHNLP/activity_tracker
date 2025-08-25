@@ -1,0 +1,39 @@
+# This is for setting up an local testing environment.
+# Move to this folder and run the following commands:
+# docker-compose up -d
+# docker-compose down --volumes
+# docker exec -it datajoint-local mysql -uroot -psimple
+# docker exec -it datajoint-local bash
+# mysqld --verbose --help | grep bind-address
+
+# Some Errors with Docker?
+# Macbook M1 and M2 chips requires passing the platform environment.
+
+# In a case that youe encounter such errors do export this to your
+# environment before running the docker-compose commands above.
+
+# docker pull --platform linux/x86_64 mysql
+
+version: "3.3"
+
+services:
+  db:
+    container_name: datajoint-local
+    platform: linux/x86_64
+    image: mysql:5.7.40
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: simple
+    command: --default-authentication-plugin=mysql_native_password --innodb-buffer-pool-size=512M --max-allowed-packet=64M
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql:/var/lib/mysql
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
+
+volumes:
+  mysql:

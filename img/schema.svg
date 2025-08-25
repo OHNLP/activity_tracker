@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="398pt" height="184pt" viewBox="0.00 0.00 398.14 183.68">
+<g id="graph0" class="graph" transform="scale(1 1) rotate(0) translate(4 179.68)">
+<polygon fill="white" stroke="none" points="-4,4 -4,-179.68 394.14,-179.68 394.14,4 -4,4"/>
+<!-- measurement.DailyMeasurement -->
+<g id="node1" class="node">
+<title>measurement.DailyMeasurement</title>
+<g id="a_node1"><a xlink:title="→ subject.Subject&#13;date                 &#13;------------------------------&#13;total_steps=null     &#13;total_distance=null  &#13;sedentary_minutes=null &#13;calories_bmr=null    &#13;">
+<ellipse fill="#00007f" fill-opacity="0.250980" stroke="#00007f" stroke-opacity="0.250980" cx="125.62" cy="-87.84" rx="125.62" ry="17.28"/>
+<text text-anchor="start" x="37.5" y="-84.56" font-family="arial" text-decoration="underline" font-size="12.00" fill="#00007f" fill-opacity="0.627451">measurement.DailyMeasurement</text>
+</a>
+</g>
+</g>
+<!-- measurement.Frailty -->
+<g id="node2" class="node">
+<title>measurement.Frailty</title>
+<g id="a_node2"><a xlink:title="→ subject.Subject&#13;→ visit.Visit&#13;------------------------------&#13;wt_loss=null         &#13;weak=null            &#13;slow=null            &#13;exhaust=null         &#13;phys_act=null        &#13;ffp_score=null       &#13;ffp_status=null      &#13;ffp_status_binary=null &#13;">
+<ellipse fill="#00007f" fill-opacity="0.250980" stroke="#00007f" stroke-opacity="0.250980" cx="308.62" cy="-17.28" rx="81.52" ry="17.28"/>
+<text text-anchor="middle" x="308.62" y="-13.01" font-family="arial" font-size="12.00" fill="#00007f" fill-opacity="0.627451">measurement.Frailty</text>
+</a>
+</g>
+</g>
+<!-- subject.Subject -->
+<g id="node3" class="node">
+<title>subject.Subject</title>
+<g id="a_node3"><a xlink:title="subject_id           &#13;------------------------------&#13;group=null           &#13;sex=null             &#13;age=null             &#13;ethnicity=null       &#13;race=null            &#13;monthly_income=null  &#13;education=null       &#13;marital_status=null  &#13;living_situation=null &#13;">
+<polygon fill="#00ff00" fill-opacity="0.188235" stroke="#00ff00" stroke-opacity="0.188235" points="328.5,-175.68 230.75,-175.68 230.75,-141.12 328.5,-141.12 328.5,-175.68"/>
+<text text-anchor="start" x="238.75" y="-155.12" font-family="arial" text-decoration="underline" font-size="12.00" fill="darkgreen">subject.Subject</text>
+</a>
+</g>
+</g>
+<!-- subject.Subject&#45;&gt;measurement.DailyMeasurement -->
+<g id="edge1" class="edge">
+<title>subject.Subject-&gt;measurement.DailyMeasurement</title>
+<path fill="none" stroke="#000000" stroke-width="0.75" stroke-opacity="0.250980" d="M241.95,-140.63C217.46,-129.73 185.72,-115.6 161.58,-104.85"/>
+</g>
+<!-- subject.Subject&#45;&gt;measurement.Frailty -->
+<g id="edge2" class="edge">
+<title>subject.Subject-&gt;measurement.Frailty</title>
+<path fill="none" stroke="#000000" stroke-width="0.75" stroke-opacity="0.250980" d="M283.06,-140.89C288.64,-114.12 299.61,-61.52 305.19,-34.76"/>
+</g>
+<!-- visit.Visit -->
+<g id="node4" class="node">
+<title>visit.Visit</title>
+<g id="a_node4"><a xlink:title="→ subject.Subject&#13;visit_id             &#13;------------------------------&#13;date=null            &#13;">
+<polygon fill="#00ff00" fill-opacity="0.188235" stroke="#00ff00" stroke-opacity="0.188235" points="369.87,-105.12 307.37,-105.12 307.37,-70.56 369.87,-70.56 369.87,-105.12"/>
+<text text-anchor="start" x="315.37" y="-84.56" font-family="arial" text-decoration="underline" font-size="12.00" fill="darkgreen">visit.Visit</text>
+</a>
+</g>
+</g>
+<!-- subject.Subject&#45;&gt;visit.Visit -->
+<g id="edge3" class="edge">
+<title>subject.Subject-&gt;visit.Visit</title>
+<path fill="none" stroke="#000000" stroke-width="0.75" stroke-opacity="0.250980" d="M293.91,-140.8C303.18,-130.02 315.22,-116.03 324.47,-105.28"/>
+</g>
+<!-- visit.Visit&#45;&gt;measurement.Frailty -->
+<g id="edge4" class="edge">
+<title>visit.Visit-&gt;measurement.Frailty</title>
+<path fill="none" stroke="#000000" stroke-width="2" stroke-opacity="0.250980" d="M331.36,-70.24C326.64,-59.46 320.52,-45.47 315.82,-34.72"/>
+</g>
+</g>
+</svg>
