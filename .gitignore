@@ -178,3 +178,8 @@ data/
 
 # references
 references/
+
+# database
+*.db
+*.sqlite
+dj_*conf.json
