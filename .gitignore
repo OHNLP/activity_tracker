@@ -172,6 +172,8 @@ data/
 *.numbers
 *.db
 *.png
+*.pptx
+*.ppt
 
 # model files
 *.jar
