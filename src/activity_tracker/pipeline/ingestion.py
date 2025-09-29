@@ -117,13 +117,14 @@ def ingest_visit_and_frailty():
     # --- Prepare combined data for insertion ---
     df["date"] = df["date"].dt.date
     df["visit_id"] = df["visit_id"].astype(int)
-    df_combined = df.where(pd.notnull(df), None)
 
-    # Convert FFP score carefully after handling NaN - preserve None for missing values
-    df_combined["ffp_score"] = df_combined["ffp_score"].apply(
-        lambda x: float(x) if x is not None and pd.notna(x) else None
-    )
-    df_combined = df_combined[df_combined["date"].notna()]  # drop rows with no date
+    # Filter out rows with missing frailty measurements
+    df_combined = df[
+        df["ffp_score"].notna() & df["ffp_status"].notna()
+    ]  # Remove rows with missing frailty data
+
+    # Convert FFP score to float
+    df_combined["ffp_score"] = df_combined["ffp_score"].astype(float)
 
     # --- Insert into database using the same dataframe ---
     Visit.insert(df_combined, skip_duplicates=True, ignore_extra_fields=True)
