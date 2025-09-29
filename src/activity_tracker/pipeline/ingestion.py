@@ -282,19 +282,33 @@ def ingest_features(feature_id: int, feature_description: str = ""):
             total_steps_mean="mean",
             total_steps_std="std",
             days_exercised=lambda x: (x > 0).sum(),
-            interval_length="count",
+            measurement_days="count",
             longest_active_streak=longest_active_streak,
         ).reset_index()
+
+        # Calculate interval length (total days between visits)
+        features["interval_length"] = (
+            pd.to_datetime(features["measurement_date"])
+            - pd.to_datetime(features["start_date"])
+        ).dt.days
 
         # Calculate proportion of days exercised
         features["prop_days_exercised"] = features.apply(
             lambda row: (
-                row["days_exercised"] / row["interval_length"]
-                if row["interval_length"] > 0
+                row["days_exercised"] / row["measurement_days"]
+                if row["measurement_days"] > 0
                 else 0
             ),
             axis=1,
         )
+
+        # Calculate missing days percentage
+        features["missing_days_pct"] = (
+            (features["interval_length"] - features["measurement_days"])
+            / features["interval_length"]
+            * 100
+        ).round(2)
+
         features["visit_interval"] = f"{v_start}_to_{v_end}"
 
         # Add intervention variable - initially set to 0 for all
