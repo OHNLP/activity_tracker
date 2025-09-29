@@ -240,7 +240,7 @@ def ingest_features(feature_id: int, feature_description: str = ""):
             subset = df_measurement[
                 (df_measurement["subject_id"] == row["subject_id"])
                 & (df_measurement["date"] >= row["start_date"])
-                & (df_measurement["date"] <= row["measurement_date"])
+                & (df_measurement["date"] < row["measurement_date"])
             ].copy()
 
             if not subset.empty:
