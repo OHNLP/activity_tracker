@@ -172,6 +172,7 @@ data/
 *.numbers
 *.db
 *.png
+*.pdf
 *.pptx
 *.ppt
 
